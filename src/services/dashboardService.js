@@ -36,6 +36,7 @@ async function getDashboard(symbol, tf, { includeOrderBook = true } = {}) {
       longShort: stats.longShort,
       previousDayHigh: stats.pdh,
       previousDayLow: stats.pdl,
+      change24h: stats.change24h,
     },
     timeline: timeline.events,
     multiTimeframe: mtf,

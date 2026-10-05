@@ -16,6 +16,7 @@ const SymbolStatsSchema = new Schema(
     pdh: Number,
     pdl: Number,
     pdDayOpenTime: Number, // open time of the "previous day" candle (UTC)
+    change24h: Number,
   },
   { versionKey: false, timestamps: { createdAt: false, updatedAt: 'updatedAt' } }
 );

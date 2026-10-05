@@ -6,6 +6,11 @@ const { retry, sleep } = require('../utils/helpers');
 const BASE = config.binance.restUrl;
 const EXCHANGE = 'binance';
 
+async function getTicker24h(symbol) {
+  const d = await request('/fapi/v1/ticker/24hr', { symbol });
+  return { priceChangePercent: Number(d.priceChangePercent) };
+}
+
 async function request(path, params = {}) {
   const url = new URL(path, BASE);
   for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== null) url.searchParams.set(k, String(v));
@@ -166,4 +171,5 @@ module.exports = {
   getLongShortRatio,
   getDepth,
   getSymbols,
+  getTicker24h
 };
