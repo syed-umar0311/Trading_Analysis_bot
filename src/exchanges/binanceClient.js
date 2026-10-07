@@ -8,8 +8,9 @@ const EXCHANGE = 'binance';
 
 async function getTicker24h(symbol) {
   const d = await request('/fapi/v1/ticker/24hr', { symbol });
-  return { priceChangePercent: Number(d.priceChangePercent) };
-}
+  const priceChangePercent = Number(d?.priceChangePercent);
+  if (!Number.isFinite(priceChangePercent)) throw new Error(`ticker/24hr for ${symbol} has no usable priceChangePercent: ${JSON.stringify(d).slice(0, 200)}`);
+  return { priceChangePercent };}
 
 async function request(path, params = {}) {
   const url = new URL(path, BASE);

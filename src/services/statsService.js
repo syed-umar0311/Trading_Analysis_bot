@@ -123,8 +123,8 @@ async function refreshSymbol(symbol) {
     set.pdl = prev.low;
     set.pdDayOpenTime = prev.openTime;
   }
-  if (tick.status === 'fulfilled' && tick.value) set.change24h = tick.value.priceChangePercent;
-
+  if (tick.status === 'fulfilled' && Number.isFinite(tick.value?.priceChangePercent)) set.change24h = tick.value.priceChangePercent;
+  else if (tick.status === 'rejected') logger.warn(`ticker ${symbol}:`, tick.reason?.message);
   if (!Object.keys(set).length) throw new Error('all stats requests failed');
   await SymbolStats.updateOne({ exchange: config.exchange, symbol }, { $set: set }, { upsert: true });
 

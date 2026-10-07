@@ -1,15 +1,15 @@
-const { Schema, model } = require('mongoose');
+const { Schema, model } = require("mongoose");
 
 const WatchlistItemSchema = new Schema(
   {
-    exchange: { type: String, default: 'binance' },
-    symbol: { type: String, required: true },
+    exchange: { type: String, default: "binance" },
+    symbol: { type: String, required: true, match: /^[A-Z0-9]{3,20}$/ },
     active: { type: Boolean, default: true },
     ready: { type: Boolean, default: false }, // true once history is loaded and the engine is warm
     addedAt: { type: Date, default: Date.now },
   },
-  { versionKey: false }
+  { versionKey: false },
 );
 WatchlistItemSchema.index({ exchange: 1, symbol: 1 }, { unique: true });
 
-module.exports = model('WatchlistItem', WatchlistItemSchema);
+module.exports = model("WatchlistItem", WatchlistItemSchema);

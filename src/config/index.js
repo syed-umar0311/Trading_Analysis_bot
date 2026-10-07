@@ -28,8 +28,13 @@ module.exports = {
     wsMaxStreamsPerConnection: num(process.env.WS_MAX_STREAMS, 100),
   },
 
-  defaultSymbols: list(process.env.DEFAULT_SYMBOLS, 'BTCUSDT,ETHUSDT,SOLUSDT').map((s) => s.toUpperCase()),
-  timeframes,
+  defaultSymbols: list(process.env.DEFAULT_SYMBOLS, 'BTCUSDT,ETHUSDT,SOLUSDT')
+    .map((s) => s.toUpperCase())
+    .map((s) => {
+      if (!/^[A-Z0-9]{3,20}$/.test(s)) throw new Error(`Invalid symbol "${s}" in DEFAULT_SYMBOLS (expected e.g. BTCUSDT,ETHUSDT)`);
+      return s;
+    }),
+      timeframes,
   primaryTimeframe,
   backfillCandles: num(process.env.BACKFILL_CANDLES, 500),
 
