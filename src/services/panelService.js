@@ -91,9 +91,10 @@ async function getSetupsAllTimeframes(symbol) {
   return Object.fromEntries(config.timeframes.map((tf) => [tf, strip(rows.find((r) => r.timeframe === tf)) || { status: 'NONE', reason: 'Engine is still warming up' }]));
 }
 
-async function getCandles(symbol, tf, limit = 200) {
-  const rows = await Candle.find(scopeOf(symbol, tf)).sort({ openTime: -1 }).limit(limit).lean();
-  return { symbol, timeframe: tf, candles: rows.reverse().map(({ _id, exchange, ...c }) => c) };
+// `exchange` = 'combined' (default, what the engine analyses) or one raw venue ('binance' | 'bybit').
+async function getCandles(symbol, tf, limit = 200, exchange = config.exchange) {
+  const rows = await Candle.find({ ...scopeOf(symbol, tf), exchange }).sort({ openTime: -1 }).limit(limit).lean();
+  return { symbol, timeframe: tf, exchange, candles: rows.reverse().map(({ _id, exchange: _e, ...c }) => c) };
 }
 
 module.exports = { getCurrentPrice, getBias, getLiquidity, getFvgs, getOrderBlocks, getEvents, getStats, getSetup, getSetupsAllTimeframes, getCandles };

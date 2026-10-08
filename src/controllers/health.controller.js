@@ -9,7 +9,9 @@ exports.health = (req, res) => {
     status: mongoose.connection.readyState === 1 ? 'ok' : 'degraded',
     uptimeSeconds: Math.round(process.uptime()),
     database: DB_STATES[mongoose.connection.readyState] || 'unknown',
-    exchange: config.exchange,
+    exchange: config.exchange, // analysis scope ('combined' when several exchanges are merged)
+    exchanges: config.exchanges,
+    primaryExchange: config.primaryExchange,
     timeframes: config.timeframes,
     primaryTimeframe: config.primaryTimeframe,
     activeSymbols: ingestion.activeSymbols(),

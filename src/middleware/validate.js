@@ -19,10 +19,19 @@ function validateTimeframe(req, res, next) {
   return next();
 }
 
+// ?exchange=bybit on /candles: the merged scope or any enabled venue. Defaults to the analysed scope.
+function validateExchange(req, res, next) {
+  const ex = String(req.query.exchange || config.exchange).toLowerCase();
+  const allowed = [config.exchange, ...config.exchanges];
+  if (!allowed.includes(ex)) return next(new HttpError(400, `Invalid exchange. Available: ${[...new Set(allowed)].join(', ')}`));
+  req.exchange = ex;
+  return next();
+}
+
 const clampInt = (v, def, min, max) => {
   const n = parseInt(v, 10);
   if (Number.isNaN(n)) return def;
   return Math.min(Math.max(n, min), max);
 };
 
-module.exports = { validateSymbol, validateTimeframe, clampInt };
+module.exports = { validateSymbol, validateTimeframe, validateExchange, clampInt };

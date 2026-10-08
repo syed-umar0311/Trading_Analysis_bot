@@ -38,7 +38,7 @@ async function getIndicators(symbol, tf, { includeOrderBook = true, candleCount 
       highs: eqZones.filter((z) => z.side === 'HIGH').map((z) => ({ level: z.level, touches: z.strength })),
       lows: eqZones.filter((z) => z.side === 'LOW').map((z) => ({ level: z.level, touches: z.strength })),
     },
-    cvd: { total: cvd.total, trend: cvd.trend, divergence: cvd.divergence, recent: cvd.series.slice(-30) },
+    cvd: { total: cvd.total, trend: cvd.trend, divergence: cvd.divergence, coveragePct: cvd.coveragePct, recent: cvd.series.slice(-30) }, // coveragePct < 100 = some venues have no taker-flow data
     volumeProfile: vp ? { poc: vp.poc, valueAreaHigh: vp.valueAreaHigh, valueAreaLow: vp.valueAreaLow, rangeHigh: vp.rangeHigh, rangeLow: vp.rangeLow, candlesUsed: rows.length } : null,
     sessions: latestSessionLevels(rows, config.sessions),
     openInterest: stats ? { value: stats.openInterest, usd: stats.openInterestUsd, changePct: stats.oiChangePct } : null,

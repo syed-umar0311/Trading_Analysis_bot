@@ -1,6 +1,7 @@
 const { Schema, model } = require('mongoose');
 
-// One row = one closed candle. Raw market data, source of truth for the engine.
+// One row = one closed candle. Raw per-venue rows (exchange = binance | bybit) and, when several venues are enabled,
+// the merged rows the engine reads (exchange = 'combined').
 const CandleSchema = new Schema(
   {
     exchange: { type: String, required: true },
@@ -17,6 +18,8 @@ const CandleSchema = new Schema(
     trades: Number,
     takerBuyBase: Number, // used for CVD
     takerBuyQuote: Number,
+    takerVolumeBase: Number, // volume (base) that the taker-buy numbers refer to; 0 for venues without order-flow data
+    sources: [String], // combined candles only: which venues contributed
   },
   { versionKey: false }
 );

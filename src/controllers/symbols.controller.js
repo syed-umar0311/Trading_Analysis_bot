@@ -27,4 +27,4 @@ exports.mtf = asyncHandler(async (req, res) => res.json(await getMtf(req.symbol)
 exports.indicators = asyncHandler(async (req, res) => {
   res.json(await getIndicators(req.symbol, req.tf, { includeOrderBook: req.query.orderbook !== 'false' }));
 });
-exports.candles = asyncHandler(async (req, res) => res.json(await panels.getCandles(req.symbol, req.tf, clampInt(req.query.limit, 200, 1, 1000))));
+exports.candles = asyncHandler(async (req, res) => res.json(await panels.getCandles(req.symbol, req.tf, clampInt(req.query.limit, 200, 1, 1000), req.exchange)));

@@ -8,9 +8,8 @@ const EXCHANGE = 'binance';
 
 async function getTicker24h(symbol) {
   const d = await request('/fapi/v1/ticker/24hr', { symbol });
-  const priceChangePercent = Number(d?.priceChangePercent);
-  if (!Number.isFinite(priceChangePercent)) throw new Error(`ticker/24hr for ${symbol} has no usable priceChangePercent: ${JSON.stringify(d).slice(0, 200)}`);
-  return { priceChangePercent };}
+  return { priceChangePercent: Number(d.priceChangePercent), quoteVolume: Number(d.quoteVolume) };
+}
 
 async function request(path, params = {}) {
   const url = new URL(path, BASE);
@@ -49,6 +48,7 @@ function normalizeKline(k, symbol, timeframe) {
     trades: Number(k[8]),
     takerBuyBase: Number(k[9]),
     takerBuyQuote: Number(k[10]),
+    takerVolumeBase: Number(k[5]), // Binance reports taker-buy for the whole candle volume
   };
 }
 
@@ -69,6 +69,7 @@ function normalizeWsKline(k) {
     trades: Number(k.n),
     takerBuyBase: Number(k.V),
     takerBuyQuote: Number(k.Q),
+    takerVolumeBase: Number(k.v),
   };
 }
 

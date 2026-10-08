@@ -15,26 +15,55 @@ if (!timeframes.includes(primaryTimeframe)) {
   throw new Error(`PRIMARY_TIMEFRAME ${primaryTimeframe} must be one of TIMEFRAMES (${timeframes.join(',')})`);
 }
 
+// ---------- Exchanges ----------
+// EXCHANGES=binance,bybit  -> every coin is analysed on the COMBINED data of both venues.
+// EXCHANGES=binance        -> exactly the old single-exchange behaviour (same for bybit alone).
+const SUPPORTED_EXCHANGES = ['binance', 'bybit'];
+const exchanges = [...new Set(list(process.env.EXCHANGES, 'binance,bybit').map((s) => s.toLowerCase()))];
+for (const name of exchanges) {
+  if (!SUPPORTED_EXCHANGES.includes(name)) throw new Error(`Unsupported exchange "${name}". Allowed: ${SUPPORTED_EXCHANGES.join(', ')}`);
+}
+if (!exchanges.length) throw new Error('EXCHANGES must list at least one exchange');
+const primaryExchange = (process.env.PRIMARY_EXCHANGE || exchanges[0]).toLowerCase();
+if (!exchanges.includes(primaryExchange)) {
+  throw new Error(`PRIMARY_EXCHANGE ${primaryExchange} must be one of EXCHANGES (${exchanges.join(',')})`);
+}
+
 module.exports = {
   env: process.env.NODE_ENV || 'development',
   port: num(process.env.PORT, 4000),
   mongoUri: process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/liquidity_bias',
   corsOrigin: process.env.CORS_ORIGIN || '*',
 
-  exchange: 'binance',
+  // `exchange` is the scope key every derived collection (structure, zones, setups, stats, candles used by the
+  // engine) is stored under: 'combined' when several venues are merged, otherwise the single venue's name.
+  exchange: exchanges.length > 1 ? 'combined' : exchanges[0],
+  exchanges, // enabled venues (raw candles are stored per venue under their own name)
+  primaryExchange, // reference venue for the price-deviation guard and tie-breaks
   binance: {
     restUrl: process.env.BINANCE_REST_URL || 'https://fapi.binance.com',
     wsUrl: process.env.BINANCE_WS_URL || 'wss://fstream.binance.com/market',
     wsMaxStreamsPerConnection: num(process.env.WS_MAX_STREAMS, 100),
   },
 
-  defaultSymbols: list(process.env.DEFAULT_SYMBOLS, 'BTCUSDT,ETHUSDT,SOLUSDT')
-    .map((s) => s.toUpperCase())
-    .map((s) => {
-      if (!/^[A-Z0-9]{3,20}$/.test(s)) throw new Error(`Invalid symbol "${s}" in DEFAULT_SYMBOLS (expected e.g. BTCUSDT,ETHUSDT)`);
-      return s;
-    }),
-      timeframes,
+  bybit: {
+    restUrl: process.env.BYBIT_REST_URL || 'https://api.bybit.com',
+    // USDT/USDC perpetuals + USDT futures. Use stream.bybit.<tld> if your account is registered on a regional domain.
+    wsUrl: process.env.BYBIT_WS_URL || 'wss://stream.bybit.com/v5/public/linear',
+    wsMaxStreamsPerConnection: num(process.env.BYBIT_WS_MAX_STREAMS, 100),
+    wsPingMs: num(process.env.BYBIT_WS_PING_MS, 20000), // Bybit recommends a ping every 20 s
+    category: 'linear',
+  },
+
+  // How the venues are merged into one candle stream.
+  merge: {
+    graceMs: num(process.env.MERGE_GRACE_MS, 5000), // wait this long for the slower venue before merging without it
+    maxVenueDeviationPct: num(process.env.MAX_VENUE_DEVIATION_PCT, 5), // a venue whose close differs more than this is ignored for that candle
+    requireAllVenues: bool(process.env.REQUIRE_ALL_EXCHANGES, false), // true = watchlist only accepts coins listed on every venue
+  },
+
+  defaultSymbols: list(process.env.DEFAULT_SYMBOLS, 'BTCUSDT,ETHUSDT,SOLUSDT').map((s) => s.toUpperCase()),
+  timeframes,
   primaryTimeframe,
   backfillCandles: num(process.env.BACKFILL_CANDLES, 500),
 

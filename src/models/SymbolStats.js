@@ -17,6 +17,11 @@ const SymbolStatsSchema = new Schema(
     pdl: Number,
     pdDayOpenTime: Number, // open time of the "previous day" candle (UTC)
     change24h: Number,
+    // multi-exchange extras
+    venues: [String], // venues that contributed to this snapshot
+    venueSpreadPct: Number, // max-min mark price across venues, in %
+    oiChangeVenues: [String], // venues the oiChangePct was computed from
+    byExchange: Schema.Types.Mixed, // raw numbers per venue (funding, OI, long/short, ...)
   },
   { versionKey: false, timestamps: { createdAt: false, updatedAt: 'updatedAt' } }
 );

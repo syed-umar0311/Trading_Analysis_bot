@@ -1,9 +1,9 @@
 const router = require('express').Router();
 const c = require('../controllers/symbols.controller');
 const wl = require('../controllers/watchlist.controller');
-const { validateSymbol, validateTimeframe } = require('../middleware/validate');
+const { validateSymbol, validateTimeframe, validateExchange } = require('../middleware/validate');
 
-router.get('/', wl.search); // GET /api/symbols?search=sol  -> searchable list of Binance USDT perpetuals
+router.get('/', wl.search); // GET /api/symbols?search=sol  -> searchable list of USDT perpetuals (each with the venues that list it)
 
 const sym = [validateSymbol];
 const symTf = [validateSymbol, validateTimeframe];
@@ -20,6 +20,6 @@ router.get('/:symbol/stats', sym, c.stats); // stat strip
 router.get('/:symbol/events', symTf, c.events); // structure timeline
 router.get('/:symbol/mtf', sym, c.mtf); // multi-timeframe
 router.get('/:symbol/indicators', symTf, c.indicators); // ATR, CVD, volume profile, OB imbalance...
-router.get('/:symbol/candles', symTf, c.candles);
+router.get('/:symbol/candles', symTf, validateExchange, c.candles); // ?exchange=combined|binance|bybit
 
 module.exports = router;
